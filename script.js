@@ -456,7 +456,7 @@ function configurarFiltros() {
         { val: 'all',            label: 'Todos' },
         { val: 'ofertas',        label: '🏷️ Ofertas' },
         { val: 'iluminadores',   label: 'Iluminadores y contornos' },
-        { val: 'uñas',           label: 'Combos' },
+        { val: 'combos',           label: 'Combos' },
         { val: 'base',           label: 'Base' },
         { val: 'brochas',        label: 'Brochas' },
         { val: 'delineadores',   label: 'Delineadores' },
