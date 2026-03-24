@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taby Makeup | Maquillaje Profesional</title>
+     <link rel="icon" href="logo-nuevo-hoy.jpeg" type="image/webp">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+
+        /* ── Holographic ── */
+        .bg-holographic {
+            background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 50%, #cfd9df 100%);
+            background-size: 200% 200%;
+            animation: holo-shimmer 5s ease infinite;
+        }
+        @keyframes holo-shimmer {
+            0%   { background-position: 0%   50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0%   50%; }
+        }
+        .text-holographic {
+            background: linear-gradient(90deg, #444, #999, #444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: holo-shimmer 3s linear infinite;
+        }
+
+        /* ── Scrollbars ── */
+        .nav-scroll::-webkit-scrollbar { display: none; }
+        .nav-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #000; border-radius: 10px; }
+
+        /* ── Skeleton shimmer ── */
+        @keyframes skeleton-sweep {
+            0%   { background-position: -400px 0; }
+            100% { background-position:  400px 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+            background-size: 800px 100%;
+            animation: skeleton-sweep 1.4s ease infinite;
+        }
+
+        /* ── Image loader spinner (minimalista) ── */
+        @keyframes spin-line {
+            to { transform: rotate(360deg); }
+        }
+        .img-loader {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            transition: opacity 0.25s ease;
+        }
+        .img-loader.hidden-loader { opacity: 0; pointer-events: none; }
+        .img-loader::after {
+            content: '';
+            width: 28px;
+            height: 28px;
+            border: 2px solid #e0e0e0;
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin-line 0.7s linear infinite;
+        }
+
+        /* ── Custom toast (reemplaza SweetAlert2 toast) ── */
+        #custom-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #000;
+            color: #fff;
+            padding: 14px 20px;
+            width: calc(100% - 32px);
+            max-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+            transform: translateX(-50%) translateY(calc(100% + 32px));
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            border-radius: 4px;
+        }
+        #custom-toast.show {
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        @media (min-width: 640px) {
+            #custom-toast {
+                bottom: auto;
+                top: 24px;
+                left: auto;
+                right: 24px;
+                width: auto;
+                min-width: 240px;
+                transform: translateX(calc(100% + 32px));
+                border-radius: 0;
+            }
+            #custom-toast.show {
+                transform: translateX(0);
+            }
+        }
+        #custom-toast .toast-icon {
+            width: 18px;
+            height: 18px;
+            border: 1.5px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 9px;
+        }
+        #custom-toast .toast-text {
+            flex: 1;
+        }
+        #custom-toast .toast-label {
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 2px;
+        }
+        #custom-toast .toast-name {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #custom-toast .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: #fff;
+            width: 100%;
+            transform-origin: left;
+            transform: scaleX(1);
+        }
+        #custom-toast .toast-progress.animate {
+            animation: toast-bar 2.5s linear forwards;
+        }
+        @keyframes toast-bar {
+            from { transform: scaleX(1); }
+            to   { transform: scaleX(0); }
+        }
+
+        /* ── Product link loader ── */
+        #product-link-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9000;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            pointer-events: all;
+        }
+        #product-link-loader.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #product-link-loader.hidden {
+            display: none;
+        }
+
+        /* Logo animado */
+        .pll-logo {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 48px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: pll-logo-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;
+        }
+        .pll-logo span { color: #666; }
+
+        @keyframes pll-logo-in {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Barra de progreso indeterminada */
+        .pll-bar-track {
+            width: 180px;
+            height: 1px;
+            background: #222;
+            overflow: hidden;
+            margin-bottom: 32px;
+            opacity: 0;
+            animation: pll-logo-in 0.4s ease 0.35s forwards;
+        }
+        .pll-bar-fill {
+            height: 100%;
+            width: 45%;
+            background: #fff;
+            border-radius: 1px;
+            animation: pll-slide 1.4s cubic-bezier(0.4,0,0.2,1) infinite;
+        }
+        @keyframes pll-slide {
+            0%   { transform: translateX(-120%); }
+            100% { transform: translateX(380%); }
+        }
+
+        /* Texto inferior */
+        .pll-text {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: #444;
+            opacity: 0;
+            animation: pll-logo-in 0.4s ease 0.5s forwards;
+        }
+
+        /* Puntos animados */
+        .pll-dots::after {
+            content: '...';
+            display: inline-block;
+            width: 1.2em;
+            text-align: left;
+            overflow: hidden;
+            vertical-align: bottom;
+            animation: pll-dots 1.2s steps(4, end) infinite;
+        }
+        @keyframes pll-dots {
+            0%   { width: 0; }
+            25%  { width: 0.3em; }
+            50%  { width: 0.65em; }
+            75%  { width: 1em; }
+            100% { width: 0; }
+        }
+
+        /* ── Mobile modal como bottom sheet ── */
+        @keyframes sheet-up {
+            from { transform: translateY(100%); }
+            to   { transform: translateY(0); }
+        }
+        @media (max-width: 767px) {
+            #product-modal > div:last-child {
+                top: auto !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                transform: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: 92vh !important;
+                border-radius: 20px 20px 0 0 !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                animation: sheet-up 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+            }
+            /* Imagen más compacta en mobile */
+            #product-modal [onclick="window.zoomImage()"] {
+                padding: 20px 16px 12px !important;
+                max-height: 45vw !important;
+                min-height: 140px !important;
+            }
+            #product-modal #modal-img {
+                max-height: 38vw !important;
+            }
+            /* Handle bar visual en mobile */
+            #product-modal > div:last-child::before {
+                content: '';
+                display: block;
+                width: 36px;
+                height: 3px;
+                background: #e0e0e0;
+                border-radius: 2px;
+                margin: 12px auto -8px;
+                flex-shrink: 0;
+            }
+            /* Contenido del modal más compacto */
+            #modal-title { font-size: 1.25rem !important; margin-bottom: 8px !important; }
+            #modal-price { font-size: 1.1rem !important; margin-bottom: 12px !important; }
+            #product-modal .overflow-y-auto {
+                padding: 12px 20px 24px !important;
+            }
+        }
+
+        /* ── Cards: nombre legible en mobile ── */
+        @media (max-width: 639px) {
+            .product-name-mobile {
+                font-size: 9px !important;
+                line-height: 1.3 !important;
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: unset !important;
+                display: -webkit-box !important;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical !important;
+                min-height: 2.4em !important;
+            }
+            /* Reducir gap del grid en mobile */
+            #productos-grid {
+                gap: 12px !important;
+            }
+            /* Botón de card más pequeño en mobile */
+            #productos-grid button {
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+                font-size: 8px !important;
+            }
+            /* Precio más pequeño */
+            #productos-grid .text-lg {
+                font-size: 0.95rem !important;
+                margin-bottom: 10px !important;
+            }
+        }
+        #tono-warning:not(.hidden) { display: flex; }
+        #zoom-modal:not(.hidden) { display: flex; }
+
+        /* ── Category pills ── */
+        .cat-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 16px;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1.5px solid #e5e5e5;
+            color: #999;
+            background: #fff;
+            transition: all 0.18s ease;
+        }
+        .cat-pill:hover { border-color: #000; color: #000; }
+        .cat-pill.active {
+            background: #000;
+            border-color: #000;
+            color: #fff;
+        }
+
+        /* ── Delete confirm modal ── */
+        #delete-confirm-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9500;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0 0 0 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.22s ease;
+        }
+        #delete-confirm-modal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        #delete-confirm-modal .dcm-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(2px);
+        }
+        #delete-confirm-modal .dcm-sheet {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            border-radius: 20px 20px 0 0;
+            padding: 32px 28px 36px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+            z-index: 1;
+        }
+        #delete-confirm-modal.show .dcm-sheet {
+            transform: translateY(0);
+        }
+        .dcm-handle {
+            width: 36px;
+            height: 3px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin: 0 auto 24px;
+        }
+        .dcm-icon {
+            width: 48px;
+            height: 48px;
+            background: #fef2f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 20px;
+            color: #ef4444;
+        }
+        .dcm-title {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .dcm-subtitle {
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            font-weight: 500;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        .dcm-product-name {
+            font-weight: 800;
+            color: #000;
+        }
+        .dcm-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .dcm-btn-delete {
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        .dcm-btn-delete:hover { background: #222; }
+        .dcm-btn-cancel {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            color: #999;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border: 1.5px solid #e5e5e5;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .dcm-btn-cancel:hover { border-color: #000; color: #000; }
+    </style>
+</head>
+<body class="bg-white text-black antialiased overflow-x-hidden">
+
+    <!-- Product link loader — visible solo cuando viene con ?p= -->
+    <div id="product-link-loader" class="hidden">
+        <div class="pll-logo">Taby <span>Makeup</span></div>
+        <div class="pll-bar-track">
+            <div class="pll-bar-fill"></div>
+        </div>
+        <p class="pll-text pll-dots">Buscando producto</p>
+    </div>
+
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+        <div class="container mx-auto px-4 h-20 flex items-center justify-between">
+            <h1 class="text-2xl font-black tracking-tighter uppercase">
+                Taby <span class="text-gray-400">Makeup</span>
+            </h1>
+
+            <button onclick="window.toggleCart()" class="relative p-2 hover:bg-gray-100 rounded-full transition">
+                <i class="fa-solid fa-bag-shopping text-xl"></i>
+                <span id="cart-count" class="absolute top-0 right-0 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold">0</span>
+            </button>
+        </div>
+    </header>
+
+    <section class="relative w-full flex items-center overflow-hidden" style="height:52vw;min-height:220px;max-height:420px;">
+
+        <!-- BANNER DE FONDO -->
+        <img
+            src="banner-nuevo.png"
+            alt="Banner"
+            class="absolute inset-0 w-full h-full object-cover object-center"
+            onerror="this.style.display='none'; this.parentElement.classList.add('bg-gray-100')"
+        >
+
+        <!-- Overlay: uniforme oscuro en mobile, degradado en desktop -->
+        <div class="absolute inset-0" style="background: rgba(0,0,0,0.52);"></div>
+        <div class="absolute inset-0 hidden md:block" style="background: linear-gradient(90deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.10) 50%, transparent 100%);"></div>
+
+        <!-- Contenido centrado en el contenedor -->
+        <div class="relative z-20 w-full container mx-auto px-6 sm:px-10 md:px-14 lg:px-20">
+
+            <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-white/50 mb-2 sm:mb-3 block">Maquillaje Profesional</span>
+            <h2 class="font-black italic text-white drop-shadow-lg mb-3 sm:mb-5 leading-[0.92]" style="font-size: clamp(1.6rem, 5vw, 3.8rem);">
+                DEFINE TU<br>
+                <span style="color:#e0e0e0;">PROPIA BELLEZA</span>
+            </h2>
+
+            <!-- Botones -->
+            <div class="flex flex-wrap gap-2 sm:gap-3 mb-3 sm:mb-5">
+                <a href="#productos-grid" class="bg-white text-black px-5 sm:px-7 py-2.5 sm:py-3 text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition">Ver tienda</a>
+                <a href="https://wa.me/5493735401893" target="_blank" class="border border-white/70 text-white px-5 sm:px-7 py-2.5 sm:py-3 text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition">Asesoría</a>
+            </div>
+
+            <!-- Redes: en mobile igual que antes (fila con logo+nombre), en desktop debajo de los botones (fila con logo+nombre) -->
+            <div class="flex items-center gap-4 sm:gap-5">
+                <a href="https://www.instagram.com/taby.makeup/" target="_blank" aria-label="Instagram"
+                   class="text-white/70 hover:text-white transition-all hover:scale-110 flex items-center gap-1.5">
+                    <i class="fa-brands fa-instagram text-base sm:text-lg"></i>
+                    <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">Instagram</span>
+                </a>
+                <a href="https://www.tiktok.com/@taby.makeup" target="_blank" aria-label="TikTok"
+                   class="text-white/70 hover:text-white transition-all hover:scale-110 flex items-center gap-1.5">
+                    <i class="fa-brands fa-tiktok text-base sm:text-lg"></i>
+                    <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">TikTok</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="container mx-auto px-4 pt-10 pb-6">
+        <!-- Título de sección -->
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex-1 h-px bg-gray-100"></div>
+            <span class="text-[9px] font-black uppercase tracking-[0.4em] text-gray-300">Catálogo</span>
+            <div class="flex-1 h-px bg-gray-100"></div>
+        </div>
+
+        <!-- Buscador -->
+        <div class="relative mb-3">
+            <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 text-sm pointer-events-none"></i>
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Buscar producto..."
+                autocomplete="off"
+                class="w-full pl-12 pr-5 py-4 bg-gray-50 border border-transparent rounded-xl text-sm font-medium text-black placeholder-gray-300 outline-none focus:border-black focus:bg-white transition-all duration-200"
+            >
+        </div>
+
+        <!-- Categorías como pills scrolleables con flechas en desktop -->
+        <div class="relative flex items-center gap-2">
+            <!-- Flecha izquierda -->
+            <button id="pills-prev" aria-label="Anterior" onclick="scrollPills(-1)"
+                class="hidden md:flex flex-shrink-0 items-center justify-center w-8 h-8 border border-gray-200 bg-white text-gray-400 hover:border-black hover:text-black transition-all duration-200 rounded-full shadow-sm">
+                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+            </button>
+
+            <!-- Scroll container -->
+            <div id="pills-scroll" class="overflow-x-auto nav-scroll flex-1 -mx-0">
+                <div id="categoria-pills" class="flex gap-2 pb-1 w-max">
+                    <!-- generadas por JS -->
+                </div>
+            </div>
+
+            <!-- Flecha derecha -->
+            <button id="pills-next" aria-label="Siguiente" onclick="scrollPills(1)"
+                class="hidden md:flex flex-shrink-0 items-center justify-center w-8 h-8 border border-gray-200 bg-white text-gray-400 hover:border-black hover:text-black transition-all duration-200 rounded-full shadow-sm">
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+        </div>
+
+        <script>
+        function scrollPills(dir) {
+            const el = document.getElementById('pills-scroll');
+            el.scrollBy({ left: dir * 220, behavior: 'smooth' });
+        }
+        // Mostrar/ocultar flechas según posición del scroll
+        document.addEventListener('DOMContentLoaded', () => {
+            const el = document.getElementById('pills-scroll');
+            const prev = document.getElementById('pills-prev');
+            const next = document.getElementById('pills-next');
+            if (!el) return;
+            const update = () => {
+                const atStart = el.scrollLeft <= 4;
+                const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+                prev.style.opacity = atStart ? '0.3' : '1';
+                prev.style.pointerEvents = atStart ? 'none' : 'auto';
+                next.style.opacity = atEnd ? '0.3' : '1';
+                next.style.pointerEvents = atEnd ? 'none' : 'auto';
+            };
+            el.addEventListener('scroll', update, { passive: true });
+            // Llamar después de que JS genere las pills
+            setTimeout(update, 500);
+        });
+        </script>
+
+        <!-- Select oculto para mantener compatibilidad con filtrarProductos() -->
+        <select id="categoriaFiltro" class="hidden">
+            <option value="all">Todas las Categorías</option>
+            <option value="ofertas">Ofertas</option>
+            <option value="arqueadores">Arqueadores</option>
+            <option value="base">Base</option>
+            <option value="brillos">Brillos/Glitter</option>
+            <option value="brochas">Brochas</option>
+            <option value="uñas">Combos</option>
+            <option value="correctores">Correctores</option>
+            <option value="delineadores">Delineadores</option>
+            <option value="esponjitas">Esponjitas</option>
+            <option value="fijador">Fijador</option>
+            <option value="iluminadores">Iluminadores y contornos</option>
+            <option value="labiales">Labiales</option>
+            <option value="mascara">Máscara de pestañas</option>
+            <option value="pestanas-cejas">Pestañas/Cejas</option>
+            <option value="polvos">Polvos</option>
+            <option value="primer">Primer</option>
+            <option value="rubor">Rubor</option>
+            <option value="skalas">Skalas</option>
+            <option value="skincare">Skincare</option>
+            <option value="sombras">Sombras</option>
+            <option value="varios">Varios</option>
+        </select>
+        <!-- Select stock también oculto -->
+        <select id="disponibilidadFiltro" class="hidden">
+            <option value="all">Stock</option>
+            <option value="available">Disponible</option>
+            <option value="unavailable">Sin Stock</option>
+        </select>
+    </div>
+
+    <main class="container mx-auto px-4 pb-20">
+        <div id="productos-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        </div>
+        <!-- Botón Ver más -->
+        <div id="ver-mas-container" class="hidden mt-12 text-center">
+            <button id="ver-mas-btn" onclick="window.verMasProductos()" class="inline-flex items-center gap-3 border border-black text-black px-10 py-4 text-[10px] font-black uppercase tracking-[0.25em] hover:bg-black hover:text-white transition group">
+                <span>Ver más productos</span>
+                <i class="fa-solid fa-arrow-down group-hover:translate-y-0.5 transition-transform"></i>
+            </button>
+            <p id="ver-mas-info" class="mt-3 text-[9px] text-gray-400 uppercase tracking-widest font-bold"></p>
+        </div>
+    </main>
+
+   <footer class="bg-black text-white pt-16 pb-8 border-t border-white/10">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+            
+            <div class="space-y-4">
+                <h2 class="text-xl font-bold tracking-[0.2em] uppercase text-[#D4AF37]">
+                    Taby Makeup
+                </h2>
+                <p class="text-gray-400 text-sm leading-relaxed max-w-xs">
+                    Realzando tu belleza natural con técnicas profesionales y productos de alta gama. La esencia del estilo en cada pincelada.
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-sm font-bold tracking-widest uppercase mb-6">Navegación</h3>
+                <ul class="space-y-3 text-gray-400 text-sm">
+                    <li><a href="#" class="hover:text-white transition-colors duration-300">Inicio</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors duration-300">Servicios</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors duration-300">Galería</a></li>
+                </ul>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-sm font-bold tracking-widest uppercase mb-6">Contacto</h3>
+                <div class="flex gap-4 mb-4 text-xl">
+                    <a href="https://www.instagram.com/taby.makeup/" target="_blank" class="hover:text-[#D4AF37] transition-all"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://wa.me/5493735401893" target="_blank" class="hover:text-[#D4AF37] transition-all"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+                <p class="text-gray-400 text-sm italic">
+                    Villa Ángela, Chaco, Argentina
+                </p>
+            </div>
+        </div>
+
+        <div class="border-t border-white/5 pt-8 flex flex-col md:row items-center justify-between gap-4">
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest">
+                © 2026 TABY MAKEUP - TODOS LOS DERECHOS RESERVADOS
+            </p>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest">
+                DISEÑADO Y DESARROLLADO POR <span class="text-white font-bold">HOSTARA</span>
+            </p>
+        </div>
+    </div>
+
+</footer>
+
+    <button id="scrollTopBtn" class="fixed bottom-6 right-6 z-[60] hidden bg-black text-white shadow-2xl items-center justify-center transition-all duration-300 hover:scale-110 group" style="width:44px;height:44px;border-radius:4px;">
+        <i class="fa-solid fa-arrow-up text-xs group-hover:translate-y-[-2px] transition-transform duration-200"></i>
+    </button>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="window.closeModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-4xl bg-white rounded-xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
+            <button onclick="window.closeModal()" class="absolute top-3 right-3 z-10 bg-white/90 p-2 rounded-full hover:bg-black hover:text-white transition shadow-sm">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+            <!-- Contenedor imagen con loader integrado -->
+            <div class="w-full md:w-1/2 bg-gray-50 flex items-center justify-center p-8 cursor-zoom-in relative" onclick="window.zoomImage()">
+                <div id="modal-img-loader" class="img-loader hidden-loader"></div>
+                <img id="modal-img" src="" alt="" class="max-w-full max-h-full object-contain mix-blend-multiply relative z-10">
+            </div>
+            <div class="w-full md:w-1/2 p-8 overflow-y-auto">
+                <span id="modal-cat" class="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-2 block">Categoría</span>
+                <h3 id="modal-title" class="text-3xl font-black uppercase mb-4 leading-none">Cargando...</h3>
+                <div id="modal-price" class="text-2xl font-light mb-6">$0.00</div>
+                <div class="mb-4 md:mb-6">
+                    <h4 class="text-[10px] font-black uppercase mb-2 md:mb-3 tracking-widest italic">Descripción</h4>
+                    <p id="modal-desc" class="text-gray-500 text-sm leading-relaxed"></p>
+                </div>
+                <div id="modal-variants-container" class="mb-4 md:mb-6 hidden">
+                    <h4 class="text-[10px] font-black uppercase mb-3 tracking-widest">Selecciona un Tono</h4>
+                    <div id="modal-variants-grid" class="grid grid-cols-4 gap-2"></div>
+                </div>
+                <div id="tono-warning" class="hidden mb-4 items-center gap-3 border border-black px-4 py-3">
+                    <div class="w-[3px] self-stretch bg-black flex-shrink-0"></div>
+                    <p class="text-[9px] font-black uppercase tracking-[0.15em] leading-relaxed">Seleccioná un tono<br>para continuar</p>
+                </div>
+                <button id="modal-add-btn" class="w-full bg-holographic text-black font-black py-4 md:py-5 uppercase tracking-widest text-xs hover:shadow-lg transition">
+                  Agregar al carrito
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zoom Modal -->
+    <div id="zoom-modal" class="fixed inset-0 z-[200] hidden bg-black/95 items-center justify-center p-4">
+        <button onclick="window.closeZoom()" class="absolute top-8 right-8 text-white text-3xl"><i class="fa-solid fa-xmark"></i></button>
+        <img id="zoom-img" src="" class="max-w-full max-h-full object-contain">
+    </div>
+
+    <!-- Cart Drawer -->
+    <div id="cart-drawer" class="fixed inset-0 z-[150] hidden">
+        <div class="absolute inset-0 bg-black/40" onclick="window.toggleCart()"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300" id="drawer-content">
+            <div class="p-6 border-b flex items-center justify-between">
+                <h3 class="font-black uppercase tracking-widest">Tu Pedido</h3>
+                <button onclick="window.toggleCart()" class="text-xl hover:scale-110 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-6"></div>
+            <div class="p-6 border-t bg-gray-50">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-xs font-bold uppercase tracking-widest">Subtotal</span>
+                    <span id="cart-total" class="text-2xl font-light">$0.00</span>
+                </div>
+                <button id="checkout-btn" class="w-full bg-black text-white py-5 font-black uppercase text-xs tracking-[0.2em] hover:bg-holographic hover:text-black transition">
+                    Enviar pedido por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Toast -->
+    <div id="custom-toast">
+        <div class="toast-icon"><i class="fa-solid fa-check" style="font-size:8px"></i></div>
+        <div class="toast-text">
+            <div class="toast-label">Agregado al carrito</div>
+            <div class="toast-name" id="toast-product-name"></div>
+        </div>
+        <div class="toast-progress" id="toast-progress"></div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div id="delete-confirm-modal">
+        <div class="dcm-backdrop" onclick="window.cancelarEliminar()"></div>
+        <div class="dcm-sheet">
+            <div class="dcm-handle"></div>
+            <div class="dcm-icon"><i class="fa-solid fa-trash-can"></i></div>
+            <p class="dcm-title">Eliminar producto</p>
+            <p class="dcm-subtitle">¿Querés quitar <span id="dcm-nombre" class="dcm-product-name"></span><br>de tu pedido?</p>
+            <div class="dcm-actions">
+                <button class="dcm-btn-delete" onclick="window.confirmarEliminar()">Sí, eliminar</button>
+                <button class="dcm-btn-cancel" onclick="window.cancelarEliminar()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
